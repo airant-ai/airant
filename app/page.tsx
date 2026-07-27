@@ -12,17 +12,23 @@ const styles: { id: ResponseStyle; emoji: string; label: string; copy: string }[
   { id: "hr", emoji: "📋", label: "AI HR", copy: "A formal investigation is needed" },
 ];
 
+const providers = [
+  ["chatgpt", "ChatGPT"], ["claude", "Claude"], ["gemini", "Gemini"],
+  ["copilot", "Copilot"], ["other", "Other"],
+] as const;
+
 export default function Home() {
   const router = useRouter();
   const [rant, setRant] = useState("");
   const [style, setStyle] = useState<ResponseStyle>("roast");
+  const [provider, setProvider] = useState("chatgpt");
 
   function submitRant(event: FormEvent) {
     event.preventDefault();
     const cleanRant = rant.trim();
     if (cleanRant.length < 12) return;
-    track("rant_submitted", { style, length: cleanRant.length });
-    router.push(`/result?style=${style}&rant=${encodeURIComponent(cleanRant)}`);
+    track("rant_submitted", { style, provider });
+    router.push(`/result?style=${style}&provider=${provider}&rant=${encodeURIComponent(cleanRant)}`);
   }
 
   return (
@@ -43,12 +49,18 @@ export default function Home() {
         <form className="rant-card" onSubmit={submitRant}>
           <div className="card-topline"><label htmlFor="rant">What did AI do this time?</label><span>{rant.length}/1200</span></div>
           <textarea id="rant" maxLength={1200} value={rant} onChange={(event) => setRant(event.target.value)} placeholder="I asked it to rotate one image and somehow it redesigned my entire presentation..." required minLength={12} />
+          <div className="provider-field">
+            <label htmlFor="provider">Who caused the chaos?</label>
+            <select id="provider" value={provider} onChange={(event) => setProvider(event.target.value)}>
+              {providers.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
+            </select>
+          </div>
           <fieldset>
             <legend>Choose your closure</legend>
             <div className="style-grid">
               {styles.map((item) => (
                 <label className={style === item.id ? "style-option selected" : "style-option"} key={item.id}>
-                  <input type="radio" name="style" value={item.id} checked={style === item.id} onChange={() => { setStyle(item.id); track("response_style_selected", { style: item.id }); }} />
+                  <input type="radio" name="style" value={item.id} checked={style === item.id} onChange={() => { setStyle(item.id); track("response_style_selected", { style: item.id, provider }); }} />
                   <span className="style-emoji">{item.emoji}</span>
                   <span><b>{item.label}</b><small>{item.copy}</small></span>
                 </label>
@@ -56,7 +68,7 @@ export default function Home() {
             </div>
           </fieldset>
           <button className="primary-button" type="submit" disabled={rant.trim().length < 12}>Get my closure <span>→</span></button>
-          <p className="privacy-note">We don’t store your rant in this version. Please leave out private information.</p>
+          <p className="privacy-note">Your rant is used to create the verdict, not stored in analytics. Please leave out private information.</p>
         </form>
       </section>
 
