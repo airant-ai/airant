@@ -14,6 +14,7 @@ function ResultContent() {
   const style = validStyles.includes(rawStyle) ? rawStyle : "roast";
   const provider = params.get("provider") || "other";
   const rant = (params.get("rant") || "My AI completely ignored what I asked it to do.").slice(0, 1200);
+  const socialConsent = params.get("consent") === "yes";
   const [response, setResponse] = useState("");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -25,7 +26,7 @@ function ResultContent() {
     void fetch("/api/verdict", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ rant, style, provider, visitorId: getVisitorId() }),
+      body: JSON.stringify({ rant, style, provider, visitorId: getVisitorId(), socialConsent }),
     })
       .then(async (result) => {
         const body = await result.json() as { response?: string; error?: string };
@@ -39,7 +40,7 @@ function ResultContent() {
         }
       });
     return () => { cancelled = true; };
-  }, [provider, rant, style]);
+  }, [provider, rant, socialConsent, style]);
 
   async function share() {
     const data = { title: "My AIRant verdict", text: response, url: window.location.href };

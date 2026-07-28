@@ -47,3 +47,16 @@ export const analyticsVisitorEvents = sqliteTable(
     ),
   ],
 );
+
+export const consentedRants = sqliteTable("consented_rants", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  createdAt: text("created_at").notNull(),
+  visitorHash: text("visitor_hash").notNull(),
+  provider: text("provider").notNull(),
+  style: text("style").notNull(),
+  rant: text("rant").notNull(),
+  response: text("response").notNull(),
+  consentVersion: text("consent_version").notNull(),
+  moderationStatus: text("moderation_status").notNull().default("pending"),
+  publishedAt: text("published_at"),
+});

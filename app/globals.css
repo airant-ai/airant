@@ -37,6 +37,9 @@ fieldset { border:0; padding:23px 0 20px; margin:0; } legend { margin-bottom:11p
 .primary-button { width:100%; border:2px solid var(--ink); color:white; background:var(--purple); padding:17px 21px; font-weight:900; cursor:pointer; box-shadow:4px 4px 0 var(--ink); display:flex; justify-content:center; gap:12px; transition:.15s; text-decoration:none; }
 .primary-button:hover:not(:disabled) { transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--ink); }.primary-button:disabled { background:#aaa4ad; cursor:not-allowed; }
 .privacy-note { text-align:center; color:#8b848c; font-size:10px; margin:14px 0 0; }
+.consent-option { display:flex; gap:.75rem; align-items:flex-start; margin:1rem 0; padding:.9rem; border:1px solid rgba(18,18,18,.16); border-radius:14px; background:rgba(255,255,255,.55); cursor:pointer; }
+.consent-option input { width:18px; height:18px; margin-top:.15rem; accent-color:#ff4b3e; }
+.consent-option span { display:grid; gap:.2rem; }.consent-option small { line-height:1.35; opacity:.68; }
 .marquee { background:var(--ink); color:var(--cream); padding:18px 0; overflow:hidden; white-space:nowrap; transform:rotate(-1deg); width:101%; margin-left:-.5%; }
 .marquee div { font-size:13px; font-weight:900; letter-spacing:1px; text-align:center; }.marquee span { color:var(--acid); margin:0 23px; }
 .how { padding:145px 0; }.section-kicker { color:var(--purple); font-size:12px; text-transform:uppercase; font-weight:900; letter-spacing:1.2px; }

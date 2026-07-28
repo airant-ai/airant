@@ -11,9 +11,30 @@ function extractText(payload: { output?: Array<{ content?: Array<{ type?: string
     ?.text?.trim();
 }
 
+async function hashVisitor(value: unknown) {
+  const clean = typeof value === "string" ? value.replace(/[^a-f0-9-]/gi, "").slice(0, 48) : "anonymous";
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(clean));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function saveConsentedRant(input: { rant: string; response: string; provider: string; style: string; visitorId: unknown }) {
+  const db = (env as unknown as { DB?: D1Database }).DB;
+  if (!db) return;
+  await db.prepare(`CREATE TABLE IF NOT EXISTS consented_rants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, visitor_hash TEXT NOT NULL,
+    provider TEXT NOT NULL, style TEXT NOT NULL, rant TEXT NOT NULL, response TEXT NOT NULL,
+    consent_version TEXT NOT NULL, moderation_status TEXT NOT NULL DEFAULT 'pending', published_at TEXT
+  )`).run();
+  await db.prepare(`INSERT INTO consented_rants
+    (created_at, visitor_hash, provider, style, rant, response, consent_version, moderation_status)
+    VALUES (?, ?, ?, ?, ?, ?, '2026-07-28', 'pending')`)
+    .bind(new Date().toISOString(), await hashVisitor(input.visitorId), input.provider, input.style, input.rant, input.response)
+    .run();
+}
+
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { rant?: unknown; style?: unknown; provider?: unknown; visitorId?: unknown };
+    const body = (await request.json()) as { rant?: unknown; style?: unknown; provider?: unknown; visitorId?: unknown; socialConsent?: unknown };
     const rant = typeof body.rant === "string" ? body.rant.trim().slice(0, 1200) : "";
     const style = validStyles.has(body.style as ResponseStyle) ? body.style as ResponseStyle : "roast";
     const provider = validProviders.has(body.provider as string) ? body.provider as string : "other";
@@ -21,7 +42,9 @@ export async function POST(request: Request) {
 
     const runtime = env as unknown as { OPENAI_API_KEY?: string; OPENAI_MODEL?: string };
     if (!runtime.OPENAI_API_KEY) {
-      return Response.json({ response: generateResponse(rant, style), generatedBy: "fallback" });
+      const response = generateResponse(rant, style);
+      if (body.socialConsent === true) await saveConsentedRant({ rant, response, provider, style, visitorId: body.visitorId });
+      return Response.json({ response, generatedBy: "fallback" });
     }
 
     const tone: Record<ResponseStyle, string> = {
@@ -48,6 +71,7 @@ export async function POST(request: Request) {
     if (!apiResponse.ok) throw new Error("OpenAI request failed");
     const response = extractText(await apiResponse.json() as { output?: Array<{ content?: Array<{ type?: string; text?: string }> }> });
     if (!response) throw new Error("OpenAI returned no text");
+    if (body.socialConsent === true) await saveConsentedRant({ rant, response, provider, style, visitorId: body.visitorId });
     return Response.json({ response, generatedBy: "openai" });
   } catch {
     return Response.json({ error: "The verdict desk is briefly overwhelmed. Please try again." }, { status: 502 });
