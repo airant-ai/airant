@@ -84,7 +84,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="shell"><a className="brand" href="#top">AI<span>Rant</span><b>.</b></a><p>Built by humans. Powered by the irony of AI.</p><small>airant.co.uk · 2026</small></footer>
+      <footer className="shell"><a className="brand" href="#top">AI<span>Rant</span><b>.</b></a><p>Built by humans. Powered by the irony of AI.</p><small><a href="/privacy">Privacy</a> · airant.co.uk · 2026</small></footer>
     </main>
   );
 }

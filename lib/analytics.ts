@@ -1,5 +1,14 @@
 type EventProperties = Record<string, string | number | boolean>;
 
+function visitorId() {
+  const key = "airant_visitor";
+  const existing = window.localStorage.getItem(key);
+  if (existing) return existing;
+  const created = crypto.randomUUID();
+  window.localStorage.setItem(key, created);
+  return created;
+}
+
 export function track(event: string, properties: EventProperties = {}) {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent("airant:analytics", { detail: { event, properties } }));
@@ -14,7 +23,7 @@ export function track(event: string, properties: EventProperties = {}) {
   void fetch("/api/events", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ event, ...allowed }),
+    body: JSON.stringify({ event, visitorId: visitorId(), ...allowed }),
     keepalive: true,
   }).catch(() => undefined);
 }
