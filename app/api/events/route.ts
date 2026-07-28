@@ -52,6 +52,8 @@ export async function POST(request: Request) {
       last_seen TEXT NOT NULL
     )`).run();
     await db.prepare("CREATE UNIQUE INDEX IF NOT EXISTS analytics_visitor_event_idx ON analytics_visitor_events(day, visitor_hash, event, provider, style, value)").run();
+    await db.prepare("DELETE FROM analytics_events WHERE day < date('now', '-12 months')").run();
+    await db.prepare("DELETE FROM analytics_visitor_events WHERE day < date('now', '-12 months')").run();
 
     const day = new Date().toISOString().slice(0, 10);
     const provider = clean(body.provider, "unknown");

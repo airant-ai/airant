@@ -28,8 +28,12 @@ export default function Home() {
     event.preventDefault();
     const cleanRant = rant.trim();
     if (cleanRant.length < 12) return;
+    const submissionId = crypto.randomUUID();
+    window.sessionStorage.setItem(`airant_draft_${submissionId}`, JSON.stringify({
+      rant: cleanRant, style, provider, socialConsent,
+    }));
     track("rant_submitted", { style, provider });
-    router.push(`/result?style=${style}&provider=${provider}&consent=${socialConsent ? "yes" : "no"}&rant=${encodeURIComponent(cleanRant)}`);
+    router.push(`/result?id=${submissionId}`);
   }
 
   return (
@@ -70,7 +74,7 @@ export default function Home() {
           </fieldset>
           <label className="consent-option">
             <input type="checkbox" checked={socialConsent} onChange={(event) => setSocialConsent(event.target.checked)} />
-            <span><b>Let AIRant feature this anonymously</b><small>We may use the rant and verdict in AIRant social posts. Leave this unticked to keep it out of our content library.</small></span>
+            <span><b>Let AIRant feature this anonymously</b><small>I give AIRant permission to store and feature this rant and its response anonymously in social and promotional content. Unticked by default.</small></span>
           </label>
           <button className="primary-button" type="submit" disabled={rant.trim().length < 12}>Get my closure <span>→</span></button>
           <p className="privacy-note">Your rant is used to create the verdict, not stored in analytics. Please leave out private information.</p>
