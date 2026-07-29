@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { track } from "../lib/analytics";
 import type { ResponseStyle } from "../lib/response-generator";
 
@@ -93,7 +94,12 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="shell"><a className="brand" href="#top">AI<span>Rant</span><b>.</b></a><p>Built by humans. Powered by the irony of AI.</p><small><a href="/privacy">Privacy</a> · airant.co.uk · 2026</small></footer>
+      <section className="home-guides shell">
+        <div><div className="section-kicker">Why is AI doing that?</div><h2>Understand the chaos.</h2><p>Plain-English guides for ignored instructions, forgotten context, confident mistakes and image edits that somehow changed everything.</p><Link className="text-link" href="/help">Explore all AI frustration guides →</Link></div>
+        <div className="home-guide-links"><Link href="/help/chatgpt-not-following-instructions"><span>01</span>ChatGPT not following instructions</Link><Link href="/help/ai-keeps-getting-things-wrong"><span>02</span>AI keeps getting things wrong</Link><Link href="/help/ai-image-editing-fails"><span>03</span>AI image editing fails</Link></div>
+      </section>
+
+      <footer className="shell"><a className="brand" href="#top">AI<span>Rant</span><b>.</b></a><p>Built by humans. Powered by the irony of AI.</p><small><Link href="/help">AI help</Link> · <Link href="/privacy">Privacy</Link> · airant.co.uk · 2026</small></footer>
     </main>
   );
 }
