@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { track } from "../lib/analytics";
@@ -18,12 +18,53 @@ const providers = [
   ["copilot", "Copilot"], ["other", "Other"],
 ] as const;
 
+const examples: { label: string; rant: string; provider: string; style: ResponseStyle }[] = [
+  {
+    label: "The two-word email",
+    rant: "I asked AI to shorten my polite three-paragraph email. It returned: ‘Noted.’ Now I look like I’m firing everyone.",
+    provider: "chatgpt",
+    style: "hr",
+  },
+  {
+    label: "The mystery redesign",
+    rant: "I asked AI to rotate one image. It redesigned the entire presentation, changed the colours and invented a new logo.",
+    provider: "chatgpt",
+    style: "roast",
+  },
+  {
+    label: "The confident invention",
+    rant: "AI gave me a detailed answer, three convincing sources and absolute confidence. None of the sources existed.",
+    provider: "other",
+    style: "apologetic",
+  },
+];
+
 export default function Home() {
   const router = useRouter();
   const [rant, setRant] = useState("");
   const [style, setStyle] = useState<ResponseStyle>("roast");
   const [provider, setProvider] = useState("chatgpt");
   const [socialConsent, setSocialConsent] = useState(false);
+  const started = useRef(false);
+
+  function markStarted(value: string) {
+    setRant(value);
+    if (!started.current && value.trim().length > 0) {
+      started.current = true;
+      track("rant_started", { provider, style });
+    }
+  }
+
+  function selectExample(example: (typeof examples)[number]) {
+    setRant(example.rant);
+    setProvider(example.provider);
+    setStyle(example.style);
+    if (!started.current) {
+      started.current = true;
+      track("rant_started", { provider: example.provider, style: example.style, value: "example" });
+    }
+    track("example_selected", { provider: example.provider, style: example.style, value: example.label.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 32) });
+  }
 
   function submitRant(event: FormEvent) {
     event.preventDefault();
@@ -54,7 +95,11 @@ export default function Home() {
 
         <form className="rant-card" onSubmit={submitRant}>
           <div className="card-topline"><label htmlFor="rant">What did AI do this time?</label><span>{rant.length}/1200</span></div>
-          <textarea id="rant" maxLength={1200} value={rant} onChange={(event) => setRant(event.target.value)} placeholder="I asked it to rotate one image and somehow it redesigned my entire presentation..." required minLength={12} />
+          <textarea id="rant" maxLength={1200} value={rant} onChange={(event) => markStarted(event.target.value)} placeholder="I asked it to rotate one image and somehow it redesigned my entire presentation..." required minLength={12} />
+          <div className="example-rants" aria-label="Example rants">
+            <span>Need inspiration?</span>
+            <div>{examples.map((example) => <button type="button" key={example.label} onClick={() => selectExample(example)}>{example.label}</button>)}</div>
+          </div>
           <div className="provider-field">
             <label htmlFor="provider">Who caused the chaos?</label>
             <select id="provider" value={provider} onChange={(event) => setProvider(event.target.value)}>

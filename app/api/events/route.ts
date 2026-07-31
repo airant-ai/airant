@@ -2,7 +2,10 @@ import { env } from "cloudflare:workers";
 
 const allowedEvents = new Set([
   "page_view",
+  "campaign_visit",
+  "rant_started",
   "rant_submitted",
+  "example_selected",
   "response_style_selected",
   "result_viewed",
   "result_shared",
